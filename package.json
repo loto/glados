@@ -1,0 +1,16 @@
+{
+  "name": "glados",
+  "version": "0.0.1",
+  "description": "glados test bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Lionel Oto",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/client": "^4.6.0",
+    "dotenv": "^6.0.0",
+    "localtunnel": "^1.9.0"
+  }
+}
