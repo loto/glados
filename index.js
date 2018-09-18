@@ -1,3 +1,4 @@
+"use strict";
 require('dotenv').config();
 
 const azureBot = require('./azure/bot');
@@ -10,9 +11,7 @@ const token = process.env.SLACK_BOT_TOKEN;
 const rtm = new RTMClient(token);
 rtm.start();
 
-const RequestPromise = require('request-promise-native');
-
-const AzureHandle = '[AZURE]';
+const AzureHandle = azureBot.config.CHAT_HANDLE;
 
 rtm.on('message', (event) => {
     // For structure of `event`, see https://api.slack.com/events/message
@@ -22,26 +21,7 @@ rtm.on('message', (event) => {
         return;
     }
 
-    // Log the message
-    // console.log(`(channel:${event.channel}) ${event.user} says: ${event.text}`);
-    // console.log(event);
-
     if (event.text.includes(AzureHandle)) {
-        // let url = process.env.LUIS_URL + event.text.replace(AzureHandle, '').trim();
-
-        // console.log(url);
-
-        // RequestPromise(url)
-        // .then(function (jsonString) {
-        //     rtm.sendMessage(jsonString, event.channel)
-        //         .then((res) => {
-        //             // `res` contains information about the posted message
-        //             console.log('Message sent: ', res.ts);
-        //         })
-        //         .catch(console.error);
-        // })
-        //     .catch(console.error);
-
         let message = event.text.replace(AzureHandle, '').trim();
         azureBot.sendMessage(uuid(event), message)
             .then(function (replyString) {

@@ -2,6 +2,10 @@
 const azureDirectLineApiAuthenticationUrl = 'https://directline.botframework.com/v3/directline/tokens/generate';
 const azureDirectLineApiConversationUrl = 'https://directline.botframework.com/v3/directline/conversations';
 
+module.exports.config = Object.freeze({
+    CHAT_HANDLE: '[AZURE]'
+});
+
 const cache = require('./cache');
 const axios = require('axios');
 

@@ -1,3 +1,4 @@
+"use strict";
 const cache = {};
 
 function log(message) {
@@ -26,7 +27,7 @@ exports.setAuthenticationToken = function (uuid, authenticationToken) {
 }
 
 exports.conversationToken = function (authenticationToken) {
-    uuid = uuidFromAuthenticationToken(authenticationToken);
+    let uuid = uuidFromAuthenticationToken(authenticationToken);
     if (cache[uuid] && cache[uuid]['conversationToken']) {
         log(`${uuid} Conversation Token read`);
         return cache[uuid]['conversationToken'];
@@ -36,13 +37,13 @@ exports.conversationToken = function (authenticationToken) {
 }
 
 exports.setConversationToken = function (authenticationToken, conversationToken) {
-    uuid = uuidFromAuthenticationToken(authenticationToken);
+    let uuid = uuidFromAuthenticationToken(authenticationToken);
     log(`${uuid} Conversation Token write`);
     return cache[uuid]['conversationToken'] = conversationToken;
 }
 
 exports.conversationId = function (authenticationToken) {
-    uuid = uuidFromAuthenticationToken(authenticationToken);
+    let uuid = uuidFromAuthenticationToken(authenticationToken);
     if (cache[uuid] && cache[uuid]['conversationId']) {
         log(`${uuid} Conversation Id read`);
         return cache[uuid]['conversationId'];
@@ -52,7 +53,7 @@ exports.conversationId = function (authenticationToken) {
 }
 
 exports.setConversationId = function (authenticationToken, conversationId) {
-    uuid = uuidFromAuthenticationToken(authenticationToken);
+    let uuid = uuidFromAuthenticationToken(authenticationToken);
     log(`${uuid} Conversation Id write`);
     return cache[uuid]['conversationId'] = conversationId;
 }
