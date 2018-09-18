@@ -26,6 +26,15 @@ exports.setAuthenticationToken = function (uuid, authenticationToken) {
     return cache[uuid]['authenticationToken'] = authenticationToken;
 }
 
+exports.resetAuthenticationToken = function (uuid) {
+    if (cache[uuid] && cache[uuid]['authenticationToken']) {
+        log(`${uuid} Authentication Token reset`);
+        return cache[uuid]['authenticationToken'] = null;
+    } else {
+        return null;
+    }
+}
+
 exports.conversationToken = function (authenticationToken) {
     let uuid = uuidFromAuthenticationToken(authenticationToken);
     if (cache[uuid] && cache[uuid]['conversationToken']) {
@@ -42,6 +51,12 @@ exports.setConversationToken = function (authenticationToken, conversationToken)
     return cache[uuid]['conversationToken'] = conversationToken;
 }
 
+exports.resetConversationToken = function (authenticationToken) {
+    let uuid = uuidFromAuthenticationToken(authenticationToken);
+    log(`${uuid} Conversation Token write`);
+    return cache[uuid]['conversationToken'] = null;
+}
+
 exports.conversationId = function (authenticationToken) {
     let uuid = uuidFromAuthenticationToken(authenticationToken);
     if (cache[uuid] && cache[uuid]['conversationId']) {
@@ -56,6 +71,12 @@ exports.setConversationId = function (authenticationToken, conversationId) {
     let uuid = uuidFromAuthenticationToken(authenticationToken);
     log(`${uuid} Conversation Id write`);
     return cache[uuid]['conversationId'] = conversationId;
+}
+
+exports.resetConversationId = function (authenticationToken) {
+    let uuid = uuidFromAuthenticationToken(authenticationToken);
+    log(`${uuid} Conversation Id write`);
+    return cache[uuid]['conversationId'] = null;
 }
 
 function uuidFromAuthenticationToken(authenticationToken) {

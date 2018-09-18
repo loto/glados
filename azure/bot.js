@@ -41,20 +41,21 @@ async function authenticate(uuid) {
 
     let response = await axios.post(azureDirectLineApiAuthenticationUrl, body, config);
     if (isSuccessful(response.status)) {
-        let errorMessage = `Azure Direct Line API Authentication Process returned: ${response.status} ${response.status}`;
-        throw new Error(errorMessage);
-    } else {
         // TODO: handle response.data.expires_in (1800)
         authenticationToken = response.data.token;
         cache.setAuthenticationToken(uuid, authenticationToken);
         return authenticationToken;
+    } else {
+        cache.resetAuthenticationToken(uuid);
+        let errorMessage = `Azure Direct Line API Authentication Process returned: ${response.status} ${response.status}`;
+        throw new Error(errorMessage);
     }
 }
 
 async function startConversation(authenticationToken) {
     let conversationToken = cache.conversationToken(authenticationToken);
     let conversationId = cache.conversationId(authenticationToken);
-    if (conversationToken && conversationId) return({ token: conversationToken, id: conversationId });
+    if (conversationToken && conversationId) return ({ token: conversationToken, id: conversationId });
 
     let body = {};
     let config = {
@@ -65,16 +66,18 @@ async function startConversation(authenticationToken) {
 
     let response = await axios.post(azureDirectLineApiConversationUrl, body, config);
     if (isSuccessful(response.status)) {
-        let errorMessage = `Azure Direct Line API Start Conversation Process returned: ${response.status} ${response.status}`;
-        throw new Error(errorMessage);
-    } else {
         // TODO: handle response.data.expires_in (1800)
         // TODO: handle response.data.streamUrl
         conversationToken = response.data.token;
         conversationId = response.data.conversationId;
         cache.setConversationToken(authenticationToken, conversationToken);
         cache.setConversationId(authenticationToken, conversationId);
-        return({ token: conversationToken, id: conversationId });
+        return ({ token: conversationToken, id: conversationId });
+    } else {
+        cache.resetConversationToken(authenticationToken);
+        cache.resetConversationId(authenticationToken);
+        let errorMessage = `Azure Direct Line API Start Conversation Process returned: ${response.status} ${response.status}`;
+        throw new Error(errorMessage);
     }
 }
 
@@ -88,10 +91,10 @@ async function sendActivity(uuid, conversationId, conversationToken, message) {
 
     let response = await axios.post(`${azureDirectLineApiConversationUrl}/${conversationId}/activities`, body, config)
     if (isSuccessful(response.status)) {
+        return response.data.id;
+    } else {
         let errorMessage = `Azure Direct Line API Send Activity Process returned: ${response.status} ${response.status}`;
         throw new Error(errorMessage);
-    } else {
-        return response.data.id;
     }
 }
 
@@ -110,16 +113,16 @@ async function listActivities(conversationId, conversationToken) {
 
     let response = await axios.get(`${azureDirectLineApiConversationUrl}/${conversationId}/activities`, config);
     if (isSuccessful(response.status)) {
-        let errorMessage = `Azure Direct Line API List Activities Process returned: ${response.status} ${response.status}`;
-        throw new Error(errorMessage);
-    } else {
         // TODO: use watermark
         return response.data.activities;
+    } else {
+        let errorMessage = `Azure Direct Line API List Activities Process returned: ${response.status} ${response.status}`;
+        throw new Error(errorMessage);
     }
 }
 
 function isSuccessful(statusCode) {
-    [200, 201].includes(statusCode);
+    return [200, 201].includes(statusCode);
 }
 
 function log(message) {
