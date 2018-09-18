@@ -88,27 +88,19 @@ async function sendActivity(uuid, conversationId, conversationToken, message) {
     }
 }
 
-function listActivities(conversationId, conversationToken) {
-    return new Promise(function (resolve, reject) {
-        let config = {
-            headers: { 'Authorization': 'Bearer ' + conversationToken }
-        };
+async function listActivities(conversationId, conversationToken) {
+    let config = {
+        headers: { 'Authorization': 'Bearer ' + conversationToken }
+    };
 
-        console.log(`Sending request to list activities...`);
+    console.log(`Sending request to list activities...`);
 
-        axios.get(`${azureDirectLineApiConversationUrl}/${conversationId}/activities`, config)
-            .then(function (response) {
-                if (response.status != 200) {
-                    errorMessage = `Azure Direct Line API List Activities Process returned: ${response.status} ${response.status}`;
-                    reject(new Error(errorMessage));
-                } else {
-                    // TODO: use watermark
-                    resolve(response.data.activities);
-                }
-            })
-            .catch(function (error) {
-                errorMessage = `An error occured: ${error}`;
-                reject(new Error(errorMessage));
-            });
-    });
+    let response = await axios.get(`${azureDirectLineApiConversationUrl}/${conversationId}/activities`, config);
+    if (response.status != 200) {
+        errorMessage = `Azure Direct Line API List Activities Process returned: ${response.status} ${response.status}`;
+        throw new Error(errorMessage);
+    } else {
+        // TODO: use watermark
+        return response.data.activities;
+    }
 }
