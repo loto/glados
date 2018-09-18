@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const azureBot = require('./azure');
+const azureBot = require('./azure/bot');
 const { RTMClient } = require('@slack/client');
 
 // An access token (from your Slack app or custom integration - usually xoxb)
@@ -43,7 +43,7 @@ rtm.on('message', (event) => {
         //     .catch(console.error);
 
         let message = event.text.replace(AzureHandle, '').trim();
-        azureBot.send(uuid(event), message)
+        azureBot.sendMessage(uuid(event), message)
             .then(function (replyString) {
                 rtm.sendMessage(replyString, event.channel)
                     .then((res) => {
