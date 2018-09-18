@@ -1,5 +1,4 @@
 "use strict";
-
 const azureDirectLineApiAuthenticationUrl = 'https://directline.botframework.com/v3/directline/tokens/generate';
 const azureDirectLineApiConversationUrl = 'https://directline.botframework.com/v3/directline/conversations';
 
@@ -18,8 +17,7 @@ exports.send = async function (uuid, message) {
     if (lastActivity.replyToId == activityId) {
         console.log(`Chatbot replied: ${lastActivity.text}`);
         return lastActivity.text;
-    }
-    else {
+    } else {
         let errorMessage = "Chatbot didn't reply yet.";
         throw new Error(errorMessage);
     }
@@ -48,8 +46,7 @@ async function authenticate(uuid) {
     if (response.status != 200) {
         errorMessage = `Azure Direct Line API Authentication Process returned: ${response.status} ${response.status}`;
         throw new Error(errorMessage);
-    }
-    else {
+    } else {
         // TODO: handle response.data.expires_in (1800)
         return response.data.token;
     }
@@ -67,38 +64,28 @@ async function startConversation(authenticationToken) {
     if (response.status != 201) {
         errorMessage = `Azure Direct Line API Start Conversation Process returned: ${response.status} ${response.status}`;
         throw new Error(errorMessage);
-    }
-    else {
+    } else {
         // TODO: handle response.data.expires_in (1800)
         // TODO: handle response.data.streamUrl
         return ({ token: response.data.token, id: response.data.conversationId });
     }
 }
 
-function sendActivity(uuid, conversationId, conversationToken, message) {
-    return new Promise(function (resolve, reject) {
-        let body = { 'type': 'message', 'from': { 'id': uuid }, 'text': message };
-        let config = {
-            headers: { 'Authorization': 'Bearer ' + conversationToken, 'Content-Type': 'application/json' }
-        };
+async function sendActivity(uuid, conversationId, conversationToken, message) {
+    let body = { 'type': 'message', 'from': { 'id': uuid }, 'text': message };
+    let config = {
+        headers: { 'Authorization': 'Bearer ' + conversationToken, 'Content-Type': 'application/json' }
+    };
 
-        console.log('Sending request to send activity...');
+    console.log('Sending request to send activity...');
 
-        axios.post(`${azureDirectLineApiConversationUrl}/${conversationId}/activities`, body, config)
-            .then(function (response) {
-                if (response.status != 200) {
-                    errorMessage = `Azure Direct Line API Send Activity Process returned: ${response.status} ${response.status}`;
-                    reject(new Error(errorMessage));
-                }
-                else {
-                    resolve(response.data.id);
-                }
-            })
-            .catch(function (error) {
-                errorMessage = `An error occured: ${error}`;
-                reject(new Error(errorMessage));
-            });
-    });
+    let response = await axios.post(`${azureDirectLineApiConversationUrl}/${conversationId}/activities`, body, config)
+    if (response.status != 200) {
+        errorMessage = `Azure Direct Line API Send Activity Process returned: ${response.status} ${response.status}`;
+        throw new Error(errorMessage);
+    } else {
+        return response.data.id;
+    }
 }
 
 function listActivities(conversationId, conversationToken) {
@@ -114,8 +101,7 @@ function listActivities(conversationId, conversationToken) {
                 if (response.status != 200) {
                     errorMessage = `Azure Direct Line API List Activities Process returned: ${response.status} ${response.status}`;
                     reject(new Error(errorMessage));
-                }
-                else {
+                } else {
                     // TODO: use watermark
                     resolve(response.data.activities);
                 }
