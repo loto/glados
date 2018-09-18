@@ -6,11 +6,12 @@ const axios = require('axios');
 const cache = {};
 
 exports.send = async function (uuid, message) {
+    cache[uuid] = cache[uuid] || {};
     let authenticationToken = await authenticate(uuid);
     let conversation = await startConversation(authenticationToken);
     let activityId = await sendActivity(uuid, conversation.id, conversation.token, message);
     // TODO: use retries with delay instead
-    await waitFor(1000);
+    await waitFor(1500);
     let activities = await listActivities(conversation.id, conversation.token);
     let lastActivity = activities[activities.length - 1];
 
@@ -23,15 +24,9 @@ exports.send = async function (uuid, message) {
     }
 }
 
-async function waitFor(delay) {
-    return new Promise(function (resolve, reject) {
-        setTimeout(function () { resolve(); }, delay);
-    });
-}
-
 async function authenticate(uuid) {
     if (cache[uuid] && cache[uuid]['authenticationToken']) {
-        console.log('Authetication token read from cache');
+        console.log('Authentication token read from cache');
         return cache[uuid]['authenticationToken'];
     }
 
@@ -43,12 +38,14 @@ async function authenticate(uuid) {
     console.log('Sending request to get authentication token...');
 
     let response = await axios.post(azureDirectLineApiAuthenticationUrl, body, config);
-    if (response.status != 200) {
-        errorMessage = `Azure Direct Line API Authentication Process returned: ${response.status} ${response.status}`;
+    if (isSuccessful(response.status)) {
+        let errorMessage = `Azure Direct Line API Authentication Process returned: ${response.status} ${response.status}`;
         throw new Error(errorMessage);
     } else {
         // TODO: handle response.data.expires_in (1800)
-        return response.data.token;
+        let authenticationToken = response.data.token;
+        cache[uuid]['authenticationToken'] = authenticationToken;
+        return authenticationToken;
     }
 }
 
@@ -61,8 +58,8 @@ async function startConversation(authenticationToken) {
     console.log('Sending request to get conversation token...');
 
     let response = await axios.post(azureDirectLineApiConversationUrl, body, config);
-    if (response.status != 201) {
-        errorMessage = `Azure Direct Line API Start Conversation Process returned: ${response.status} ${response.status}`;
+    if (isSuccessful(response.status)) {
+        let errorMessage = `Azure Direct Line API Start Conversation Process returned: ${response.status} ${response.status}`;
         throw new Error(errorMessage);
     } else {
         // TODO: handle response.data.expires_in (1800)
@@ -80,12 +77,18 @@ async function sendActivity(uuid, conversationId, conversationToken, message) {
     console.log('Sending request to send activity...');
 
     let response = await axios.post(`${azureDirectLineApiConversationUrl}/${conversationId}/activities`, body, config)
-    if (response.status != 200) {
-        errorMessage = `Azure Direct Line API Send Activity Process returned: ${response.status} ${response.status}`;
+    if (isSuccessful(response.status)) {
+        let errorMessage = `Azure Direct Line API Send Activity Process returned: ${response.status} ${response.status}`;
         throw new Error(errorMessage);
     } else {
         return response.data.id;
     }
+}
+
+async function waitFor(delay) {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () { resolve(); }, delay);
+    });
 }
 
 async function listActivities(conversationId, conversationToken) {
@@ -96,11 +99,15 @@ async function listActivities(conversationId, conversationToken) {
     console.log(`Sending request to list activities...`);
 
     let response = await axios.get(`${azureDirectLineApiConversationUrl}/${conversationId}/activities`, config);
-    if (response.status != 200) {
-        errorMessage = `Azure Direct Line API List Activities Process returned: ${response.status} ${response.status}`;
+    if (isSuccessful(response.status)) {
+        let errorMessage = `Azure Direct Line API List Activities Process returned: ${response.status} ${response.status}`;
         throw new Error(errorMessage);
     } else {
         // TODO: use watermark
         return response.data.activities;
     }
+}
+
+function isSuccessful(statusCode) {
+    [200, 201].includes(statusCode);
 }
