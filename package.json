@@ -10,7 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "@slack/client": "^4.6.0",
+    "axios": "^0.18.0",
     "dotenv": "^6.0.0",
-    "localtunnel": "^1.9.0"
+    "localtunnel": "^1.9.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5"
   }
 }
