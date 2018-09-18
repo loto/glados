@@ -6,7 +6,6 @@ const azureDirectLineApiConversationUrl = 'https://directline.botframework.com/v
 const axios = require('axios');
 const cache = {};
 
-
 exports.send = async function (uuid, message) {
     let authenticationToken = await authenticate(uuid);
     let conversation = await startConversation(authenticationToken);
@@ -56,32 +55,24 @@ async function authenticate(uuid) {
     }
 }
 
-function startConversation(authenticationToken) {
-    return new Promise(function (resolve, reject) {
-        let body = {};
-        let config = {
-            headers: { 'Authorization': 'Bearer ' + authenticationToken }
-        };
+async function startConversation(authenticationToken) {
+    let body = {};
+    let config = {
+        headers: { 'Authorization': 'Bearer ' + authenticationToken }
+    };
 
-        console.log('Sending request to get conversation token...');
+    console.log('Sending request to get conversation token...');
 
-        axios.post(azureDirectLineApiConversationUrl, body, config)
-            .then(function (response) {
-                if (response.status != 201) {
-                    errorMessage = `Azure Direct Line API Start Conversation Process returned: ${response.status} ${response.status}`;
-                    reject(new Error(errorMessage));
-                }
-                else {
-                    // TODO: handle response.data.expires_in (1800)
-                    // TODO: handle response.data.streamUrl
-                    resolve({ token: response.data.token, id: response.data.conversationId });
-                }
-            })
-            .catch(function (error) {
-                errorMessage = `An error occured: ${error}`;
-                reject(new Error(errorMessage));
-            });
-    });
+    let response = await axios.post(azureDirectLineApiConversationUrl, body, config);
+    if (response.status != 201) {
+        errorMessage = `Azure Direct Line API Start Conversation Process returned: ${response.status} ${response.status}`;
+        throw new Error(errorMessage);
+    }
+    else {
+        // TODO: handle response.data.expires_in (1800)
+        // TODO: handle response.data.streamUrl
+        return ({ token: response.data.token, id: response.data.conversationId });
+    }
 }
 
 function sendActivity(uuid, conversationId, conversationToken, message) {
