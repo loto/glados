@@ -11,10 +11,11 @@ exports.send = async function (uuid, message) {
     let authenticationToken = await authenticate(uuid);
     let conversation = await startConversation(authenticationToken);
     let activityId = await sendActivity(uuid, conversation.id, conversation.token, message);
-    await waitFor(1500);
+    // TODO: use retries with delay instead
+    await waitFor(1000);
     let activities = await listActivities(conversation.id, conversation.token);
     let lastActivity = activities[activities.length - 1];
-    
+
     if (lastActivity.replyToId == activityId) {
         console.log(`Chatbot replied: ${lastActivity.text}`);
         return lastActivity.text;
@@ -25,42 +26,34 @@ exports.send = async function (uuid, message) {
     }
 }
 
-function waitFor(delay) {
+async function waitFor(delay) {
     return new Promise(function (resolve, reject) {
         setTimeout(function () { resolve(); }, delay);
     });
 }
 
-function authenticate(uuid) {
+async function authenticate(uuid) {
     if (cache[uuid] && cache[uuid]['authenticationToken']) {
         console.log('Authetication token read from cache');
-        return Promise.resolve(cache[uuid]['authenticationToken']);
+        return cache[uuid]['authenticationToken'];
     }
 
-    return new Promise(function (resolve, reject) {
-        let body = {};
-        let config = {
-            headers: { 'Authorization': 'Bearer ' + process.env.AZURE_DIRECT_LINE_SECRET }
-        };
+    let body = {};
+    let config = {
+        headers: { 'Authorization': 'Bearer ' + process.env.AZURE_DIRECT_LINE_SECRET }
+    };
 
-        console.log('Sending request to get authentication token...');
+    console.log('Sending request to get authentication token...');
 
-        axios.post(azureDirectLineApiAuthenticationUrl, body, config)
-            .then(function (response) {
-                if (response.status != 200) {
-                    errorMessage = `Azure Direct Line API Authentication Process returned: ${response.status} ${response.status}`;
-                    reject(new Error(errorMessage));
-                }
-                else {
-                    // TODO: handle response.data.expires_in (1800)
-                    resolve(response.data.token);
-                }
-            })
-            .catch(function (error) {
-                errorMessage = `An error occured: ${error}`;
-                reject(new Error(errorMessage));
-            });
-    });
+    let response = await axios.post(azureDirectLineApiAuthenticationUrl, body, config);
+    if (response.status != 200) {
+        errorMessage = `Azure Direct Line API Authentication Process returned: ${response.status} ${response.status}`;
+        throw new Error(errorMessage);
+    }
+    else {
+        // TODO: handle response.data.expires_in (1800)
+        return response.data.token;
+    }
 }
 
 function startConversation(authenticationToken) {
