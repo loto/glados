@@ -44,4 +44,3 @@ async function waitFor(delay) {
 function log(message) {
     console.log(`${new Date().toISOString()} | AZURE BOT > ${message}`);
 }
-›

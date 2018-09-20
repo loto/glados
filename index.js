@@ -34,7 +34,7 @@ rtm.on('message', (event) => {
             });
     }
     else {
-        rtm.sendMessage('Hello there!', event.channel)
+        rtm.sendMessage("Hello there! Here's my default reply in slack.", event.channel)
             .then((res) => {
                 // `res` contains information about the posted message
                 console.log('Message sent: ', res.ts);
