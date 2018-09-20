@@ -9,9 +9,21 @@ exports.sendMessage = async function (uuid, message) {
     let authenticationToken = await api.authenticate(uuid);
     let conversation = await api.startConversation(authenticationToken);
     let activityId = await api.sendActivity(uuid, conversation.id, conversation.token, message);
-    // TODO: use retries with delay instead
-    await waitFor(1500);
-    let activities = await api.listActivities(conversation.id, conversation.token);
+    return await getReplyWithDelayedRetries(conversation.id, conversation.token, activityId, 4);
+}
+
+async function getReplyWithDelayedRetries(conversationId, conversationToken, activityId, n) {
+    try {
+        return await getReply(conversationId, conversationToken, activityId);
+    } catch (error) {
+        if (n === 1) throw error;
+        await waitFor(500);
+        return await getReplyWithDelayedRetries(conversationId, conversationToken, activityId, n - 1);
+    }
+};
+
+async function getReply(conversationId, conversationToken, activityId) {
+    let activities = await api.listActivities(conversationId, conversationToken);
     let lastActivity = activities[activities.length - 1];
 
     if (lastActivity.replyToId == activityId) {
@@ -32,3 +44,4 @@ async function waitFor(delay) {
 function log(message) {
     console.log(`${new Date().toISOString()} | AZURE BOT > ${message}`);
 }
+›
