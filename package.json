@@ -13,8 +13,6 @@
     "axios": "^0.18.0",
     "dotenv": "^6.0.0",
     "fastify": "^1.12.1",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.5",
-    "restify": "^7.2.1"
+    "uuid": "^3.3.2"
   }
 }
