@@ -1,5 +1,13 @@
-"use strict";
+'use strict';
 require('dotenv').config();
+const fastify = require('fastify')({ logger: true });
+const uuidv1 = require('uuid/v1');
+const cache = {};
+
+const echobot = require('./echobot-adapter/bot');
+
+const AGENTS = { 'echobot': echobot };
+const default_agent = 'echobot';
 
 const azureBot = require('./azure/bot');
 const { RTMClient } = require('@slack/client');
@@ -45,4 +53,80 @@ rtm.on('message', (event) => {
 
 function uuid(event) {
     return `${event.team}-${event.channel}-${event.user}`;
+}
+
+fastify.post('/conversation/start', async (request, reply) => {
+    reply.type('application/json').code(201)
+    let uuid = uuidv1();
+    cache[uuid] = default_agent;
+    return { token: uuid }
+})
+
+const conversation_say_opts = {
+    schema: {
+        body: {
+            type: 'object',
+            properties: {
+                token: { type: 'string' },
+                message: { type: 'string' }
+            },
+            required: ['token', 'message']
+        }
+    }
+}
+
+fastify.post('/conversation/say', conversation_say_opts, async (request, reply) => {
+    if (findAgent(request.body.token)) {
+        reply.type('application/json').code(200);
+        return { reply: await AGENTS[cache[request.body.token]].sendMessage(request.body.token, request.body.message) };
+    } else {
+        reply.type('application/json').code(404);
+        return { error: 'Unknown conversation token' };
+    }
+})
+
+fastify.get('/agent/list', async (request, reply) => {
+    reply.type('application/json').code(200)
+    return { agents: Object.keys(AGENTS) }
+})
+
+const agent_select_opts = {
+    schema: {
+        body: {
+            type: 'object',
+            properties: {
+                token: { type: 'string' },
+                name: { type: 'string' }
+            },
+            required: ['name', 'token']
+        }
+    }
+}
+
+fastify.post('/agent/select', agent_select_opts, async (request, reply) => {
+    if (findAgent(request.body.token)) {
+        if (Object.keys(AGENTS).includes(request.body.name)) {
+            cache[request.body.token] = request.body.name;
+            reply.type('application/json').code(200)
+            return { agent: request.body.name }
+        } else {
+            reply.type('application/json').code(404);
+            return { error: 'Unknown agent' };
+        }
+    } else {
+        reply.type('application/json').code(404);
+        return { error: 'Unknown conversation token' };
+    }
+})
+
+fastify.listen(process.env.PORT, (err, address) => {
+    if (err) throw err
+    fastify.log.info(`server listening on ${address}`)
+})
+
+function findAgent(token) {
+    let [_token, agent] = Object.entries(cache).find(function ([key, value]) {
+        return key === token;
+    });
+    return agent;
 }
