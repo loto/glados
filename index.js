@@ -4,7 +4,7 @@ const fastify = require('fastify')({ logger: true });
 const sessions = require('./sessions');
 
 const echobot = require('./echobot-adapter/bot');
-const azurebot = require('./azure/bot');
+const azurebot = require('./azurebot-adapter/bot');
 
 const AGENTS = { 'echobot': echobot, 'azurebot': azurebot };
 const default_agent = 'echobot';
@@ -41,7 +41,7 @@ fastify.post('/conversation/say', conversation_say_opts, async (request, reply) 
     }
 });
 
-fastify.get('/agent/list', async (request, reply) => {
+fastify.get('/agents/list', async (request, reply) => {
     reply.type('application/json').code(200)
     return { agents: Object.keys(AGENTS) }
 })
