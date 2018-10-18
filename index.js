@@ -5,11 +5,12 @@ const sessions = require('./sessions');
 
 const echobot = require('./echobot-adapter/bot');
 const azurebot = require('./azurebot-adapter/bot');
+const rasabot = require('./rasabot-adapter/bot');
 
-const AGENTS = { 'echobot': echobot, 'azurebot': azurebot };
+const AGENTS = { 'echobot': echobot, 'azurebot': azurebot, 'rasabot': rasabot };
 const default_agent = 'echobot';
 
-fastify.post('/conversation/start', async (request, reply) => {
+fastify.post('/conversation/start', async (_request, reply) => {
     reply.type('application/json').code(201)
     let session = await sessions.new(default_agent);
     return { token: session.token }
