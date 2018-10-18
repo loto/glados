@@ -3,10 +3,6 @@ const baseLogger = require('pino')();
 const botLogger = baseLogger.child({ component: 'Azure Bot' });;
 const api = require('./api');
 
-exports.config = Object.freeze({
-    CHAT_HANDLE: '[AZURE]'
-});
-
 exports.sendMessage = async function (uuid, message) {
     let authenticationToken = await api.authenticate(uuid);
     let conversation = await api.startConversation(authenticationToken);
