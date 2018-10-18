@@ -1,7 +1,9 @@
-"use strict";
+'use strict';
 const azureDirectLineApiAuthenticationUrl = 'https://directline.botframework.com/v3/directline/tokens/generate';
 const azureDirectLineApiConversationUrl = 'https://directline.botframework.com/v3/directline/conversations';
 
+const baseLogger = require('pino')();
+const apiLogger = baseLogger.child({ component: 'Direct Line Api' });;
 const cache = require('./cache');
 const axios = require('axios');
 
@@ -99,5 +101,5 @@ function isSuccessful(statusCode) {
 }
 
 function log(message) {
-    console.log(`${new Date().toISOString()} | DIRECT LINE API > ${message}`);
+    apiLogger.info(message);
 }

@@ -1,8 +1,10 @@
-"use strict";
+'use strict';
+const baseLogger = require('pino')();
+const cacheLogger = baseLogger.child({ component: 'Azure Cache' });
 const cache = {};
 
 function log(message) {
-    console.log(`${new Date().toISOString()} | AZURE CACHE > ${message}`);
+    cacheLogger.info(message);
 }
 
 exports.init = function (uuid) {

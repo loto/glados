@@ -1,4 +1,6 @@
-"use strict";
+'use strict'
+const baseLogger = require('pino')();
+const botLogger = baseLogger.child({ component: 'Azure Bot' });;
 const api = require('./api');
 
 exports.config = Object.freeze({
@@ -42,5 +44,5 @@ async function waitFor(delay) {
 }
 
 function log(message) {
-    console.log(`${new Date().toISOString()} | AZURE BOT > ${message}`);
+    botLogger.info(message);
 }

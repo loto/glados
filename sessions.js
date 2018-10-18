@@ -26,6 +26,5 @@ exports.update = async (token, new_agent_name) => {
     });
 
     cache.push(session);
-    console.log(cache);
     return session;
 }
