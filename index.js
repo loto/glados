@@ -1,11 +1,11 @@
 'use strict';
 require('dotenv').config();
 const fastify = require('fastify')({ logger: true });
-const sessions = require('./sessions');
+const sessions = require('./lib/sessions');
 
-const echobot = require('./echobot-adapter/bot');
-const azurebot = require('./azurebot-adapter/bot');
-const rasabot = require('./rasabot-adapter/bot');
+const echobot = require('./lib/echobot-adapter/bot');
+const azurebot = require('./lib/azurebot-adapter/bot');
+const rasabot = require('./lib/rasabot-adapter/bot');
 
 const AGENTS = { 'echobot': echobot, 'azurebot': azurebot, 'rasabot': rasabot };
 const default_agent = 'echobot';
