@@ -106,6 +106,22 @@ fastify.get('/incidents/list', async (_request, reply) => {
     }
 });
 
+fastify.get('/incidents/search', async (request, reply) => {
+    let id = request.query.id;
+    let response;
+    try {
+        response = await incidents.find(id);
+        reply.type('application/json')
+            .code(200)
+            .send({ incident: response });
+    } catch (error) {
+        let errorCode = error.code ? error.code : 500;
+        reply.type('application/json')
+            .code(errorCode)
+            .send({ error: error.message });
+    }
+});
+
 fastify.listen(process.env.PORT, (err, _address) => {
     if (err) throw err
 });
