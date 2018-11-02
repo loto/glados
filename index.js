@@ -73,7 +73,10 @@ const agent_select_opts = {
             type: 'object',
             properties: {
                 token: { type: 'string' },
-                name: { type: 'string' }
+                name: {
+                    type: 'string',
+                    enum: Object.keys(AGENTS)
+                }
             },
             required: ['name', 'token']
         }
@@ -87,16 +90,10 @@ fastify.post('/agent/select', agent_select_opts, async (request, reply) => {
     let session = await fastify.authenticate(token);
     if (!session) reply.invalidAuthentication();
 
-    if (Object.keys(AGENTS).includes(name)) {
-        await sessions.update(token, name);
-        reply.type('application/json')
-            .code(200)
-            .send({ agent: name });
-    } else {
-        reply.type('application/json')
-            .code(404)
-            .send({ error: 'Unknown agent' });
-    }
+    await sessions.update(token, name);
+    reply.type('application/json')
+        .code(200)
+        .send({ agent: name });
 });
 
 fastify.get('/incidents/list', async (_request, reply) => {
