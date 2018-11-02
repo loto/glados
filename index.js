@@ -7,7 +7,7 @@ const echobot = require('./lib/echobot-adapter/bot');
 const azurebot = require('./lib/azurebot-adapter/bot');
 const rasabot = require('./lib/rasabot-adapter/bot');
 
-const AGENTS = { 'echobot': echobot, 'azurebot': azurebot, 'rasabot': rasabot };
+const AGENTS = { 'echobot': echobot, 'azurebot': azurebot };
 const default_agent = 'echobot';
 
 fastify.decorate('authenticate', async (token) => {
