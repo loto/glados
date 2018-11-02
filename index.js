@@ -6,7 +6,6 @@ const sessions = require('./lib/sessions');
 const echobot = require('./lib/echobot-adapter/bot');
 const azurebot = require('./lib/azurebot-adapter/bot');
 const rasabot = require('./lib/rasabot-adapter/bot');
-const incidents = require('./lib/incidents/incident');
 
 const AGENTS = { 'echobot': echobot, 'azurebot': azurebot, 'rasabot': rasabot };
 const default_agent = 'echobot';
@@ -94,37 +93,6 @@ fastify.post('/agent/select', agent_select_opts, async (request, reply) => {
     reply.type('application/json')
         .code(200)
         .send({ agent: name });
-});
-
-fastify.get('/incidents/list', async (_request, reply) => {
-    let response;
-    try {
-        response = await incidents.all();
-        reply.type('application/json')
-            .code(200)
-            .send({ incidents: response });
-    } catch (error) {
-        let errorCode = isNaN(error.code) ? 500 : error.code;
-        reply.type('application/json')
-            .code(errorCode)
-            .send({ error: error.message });
-    }
-});
-
-fastify.get('/incidents/search', async (request, reply) => {
-    let id = request.query.id;
-    let response;
-    try {
-        response = await incidents.find(id);
-        reply.type('application/json')
-            .code(200)
-            .send({ incident: response });
-    } catch (error) {
-        let errorCode = isNaN(error.code) ? 500 : error.code;
-        reply.type('application/json')
-            .code(errorCode)
-            .send({ error: error.message });
-    }
 });
 
 fastify.listen(process.env.PORT, (err, _address) => {
