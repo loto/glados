@@ -48,9 +48,17 @@ fastify.post('/conversation/say', conversation_say_opts, async (request, reply) 
     let session = await fastify.authenticate(token);
     if (!session) reply.invalidAuthentication();
 
-    reply.type('application/json')
-        .code(200)
-        .send({ reply: await AGENTS[session.agent_name].sendMessage(token, message) });
+    try {
+        let response = await AGENTS[session.agent_name].sendMessage(token, message)
+        reply.type('application/json')
+            .code(200)
+            .send({ reply: response });
+    } catch (error) {
+        let errorCode = isNaN(error.code) ? 500 : error.code;
+        reply.type('application/json')
+            .code(errorCode)
+            .send({ error: error.message });
+    }
 });
 
 fastify.get('/agents/list', async (_request, reply) => {
@@ -99,7 +107,7 @@ fastify.get('/incidents/list', async (_request, reply) => {
             .code(200)
             .send({ incidents: response });
     } catch (error) {
-        let errorCode = error.code ? error.code : 500;
+        let errorCode = isNaN(error.code) ? 500 : error.code;
         reply.type('application/json')
             .code(errorCode)
             .send({ error: error.message });
@@ -115,7 +123,7 @@ fastify.get('/incidents/search', async (request, reply) => {
             .code(200)
             .send({ incident: response });
     } catch (error) {
-        let errorCode = error.code ? error.code : 500;
+        let errorCode = isNaN(error.code) ? 500 : error.code;
         reply.type('application/json')
             .code(errorCode)
             .send({ error: error.message });
