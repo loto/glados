@@ -53,9 +53,9 @@ fastify.post('/conversation/say', conversation_say_opts, async (request, reply) 
             .code(200)
             .send({ reply: response });
     } catch (error) {
-        let errorCode = isNaN(error.code) ? 500 : error.code;
+        let statusCode = error.statusCode ?  error.statusCode : 500;
         reply.type('application/json')
-            .code(errorCode)
+            .code(statusCode)
             .send({ error: error.message });
     }
 });
