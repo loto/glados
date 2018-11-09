@@ -1,6 +1,6 @@
 'use strict';
 require('dotenv').config();
-const fastify = require('fastify')({ logger: true });
+const fastify = require('fastify')({ logger: { level: process.env.LOG_LEVEL } });
 const sessions = require('./lib/sessions');
 
 const echobot = require('./lib/echobot-adapter/bot');
